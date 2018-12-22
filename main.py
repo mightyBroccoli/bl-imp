@@ -8,7 +8,6 @@ import requests
 import os
 import sys
 import argparse
-import yaml
 from ruamel.yaml import YAML, scalarstring
 
 
@@ -69,12 +68,11 @@ class BlacklistImporter:
 			os.system("ejabberdctl reload_config")
 
 	def process(self):
-		# check if file was altered
-		local_file = None
+		# init new YAML variable
+		local_file = YAML(typ="safe")
 		try:
-			if os.path.isfile(self.outfile):
-				local_file = yaml.load(open(self.outfile, "r", encoding="utf-8"))
-		except TypeError:
+			local_file = local_file.load(open(self.outfile, "r", encoding="utf-8"))
+		except FileNotFoundError:
 			pass
 
 		remote_file = {
@@ -99,7 +97,7 @@ class BlacklistImporter:
 
 		elif local_file != remote_file:
 			self.change = True
-			# only if the local_file and remote_file are different write new file
+			# only if the local_file and remote_file are unequal write new file
 			yml.dump(remote_file, open(self.outfile, "w"))
 
 
