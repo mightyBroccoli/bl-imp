@@ -2,27 +2,28 @@
 # -*- coding: utf-8 -*-
 
 # workflow
-# start options main.py --ejabberd/prosody --dry-run --outfile file
+# start options main.py --dry-run --outfile file
 
 import requests
-import sys
 import os
+import sys
 import argparse
 import yaml
+from ruamel.yaml import YAML, scalarstring
 
 
 class BlacklistImporter:
 	def __init__(self, args):
-		self.server = args.software
 		self.outfile = args.outfile
 		self.dryrun = args.dryrun
 		self.url = "https://raw.githubusercontent.com/JabberSPAM/blacklist/master/blacklist.txt"
 		self.blacklist = None
+		self.change = False
 
 	def request(self):
 		# check if etag header is present if not set local_etag to ""
 		if os.path.isfile(".etag"):
-			with open(".etag") as file:
+			with open(".etag", "r") as file:
 				local_etag = file.read()
 		else:
 			local_etag = ""
@@ -32,24 +33,22 @@ class BlacklistImporter:
 			head = s.head(self.url)
 			etag = head.headers['etag']
 
-			# compare etag with local_etag if they match up no request is made
-			if local_etag == etag:
-				with open("blacklist.txt", "r") as file:
-					self.blacklist = file.readline()
-
-			# if the connection is not possible use cached xml if present
-			elif os.path.isfile("blacklist.txt") and head.status_code != 200:
-				with open("blacklist.txt", "r") as file:
-					self.blacklist = file.readline()
+			# if file is present
+			if os.path.isfile("blacklist.txt"):
+				# if etags match up or if a connection is not possible fall back to local cache
+				if local_etag == etag or head.status_code != 200:
+					with open("blacklist.txt", "r", encoding="utf-8") as file:
+						self.blacklist = file.readline()
 
 			# in any other case request a new file
 			else:
 				r = s.get(self.url)
 				r.encoding = 'utf-8'
 				local_etag = head.headers['etag']
+				self.blacklist = r.content.decode()
 
 				with open("blacklist.txt", "w") as file:
-					file.write(r.content.decode())
+					file.write(self.blacklist)
 
 				with open('.etag', 'w') as string:
 					string.write(local_etag)
@@ -60,23 +59,23 @@ class BlacklistImporter:
 
 		if self.dryrun:
 			# only output the selected software and outfile
-			print("server software selected: %s" % self.server)
 			print("outfile selected: %s" % self.outfile)
 
-		if self.server == "ejabberd":
-			# select ejabberd processing
-			self.ejabberd()
+		# select ejabberd processing
+		self.process()
 
-		elif self.server == "prosody":
-			# select prosody processing
-			self.prosody()
-		else:
-			# in any other case exit
-			sys.exit(3)
+		# reload config if changes have been applied
+		if self.change:
+			os.system("ejabberdctl reload_config")
 
-	def ejabberd(self):
+	def process(self):
 		# check if file was altered
-		local_file = yaml.load(open(self.outfile, "r"))
+		local_file = None
+		try:
+			if os.path.isfile(self.outfile):
+				local_file = yaml.load(open(self.outfile, "r", encoding="utf-8"))
+		except TypeError:
+			pass
 
 		remote_file = {
 			"acl": {
@@ -87,26 +86,28 @@ class BlacklistImporter:
 		}
 
 		for entry in self.blacklist.split():
+			entry = scalarstring.DoubleQuotedScalarString(entry)
 			remote_file["acl"]["spamblacklist"]["server"].append(entry)
 
+		yml = YAML()
+		yml.indent(offset=2)
+		yml.default_flow_style = False
+
 		if self.dryrun:
-			print(yaml.dump(remote_file))
+			# if dryrun true print expected content
+			yml.dump(remote_file, sys.stdout)
 
 		elif local_file != remote_file:
-			yaml.dump(remote_file, open(self.outfile, "w"))
-
-	def prosody(self):
-		pass
+			self.change = True
+			# only if the local_file and remote_file are different write new file
+			yml.dump(remote_file, open(self.outfile, "w"))
 
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
-	parser.add_argument('-e', '--ejabberd', help='set server software to ejabberd', action='store_const', dest='software',
-						const="ejabberd", default=None)
-	parser.add_argument('-p', '--prosody', help='set server software to prosody', action='store_const', dest='software',
-						const="prosody", default=None)
 	parser.add_argument('-o', '--outfile', help='set path to output file', dest='outfile', default=None)
-	parser.add_argument('--dry-run', help='perform only a dry run', action='store_true', dest='dryrun', default=False)
+	parser.add_argument('-dr', '--dry-run', help='perform a dry run', action='store_true', dest='dryrun', default=False)
 	args = parser.parse_args()
 
+	# run
 	BlacklistImporter(args).main()
