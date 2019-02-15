@@ -32,12 +32,12 @@ class BlacklistImporter:
 			head = s.head(self.url)
 			etag = head.headers['etag']
 
-			# if file is present
-			if os.path.isfile("blacklist.txt"):
-				# if etags match up or if a connection is not possible fall back to local cache
-				if local_etag == etag or head.status_code != 200:
+			# if etags match up or if a connection is not possible fall back to local cache
+			if local_etag == etag or head.status_code != 200:
+				# check if local cache is present
+				if os.path.isfile("blacklist.txt"):
 					with open("blacklist.txt", "r", encoding="utf-8") as file:
-						self.blacklist = file.readline()
+						self.blacklist = file.read()
 
 			# in any other case request a new file
 			else:
