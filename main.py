@@ -70,10 +70,15 @@ class BlacklistImporter:
 	def process(self):
 		# init new YAML variable
 		local_file = YAML(typ="safe")
-		try:
-			local_file = local_file.load(open(self.outfile, "r", encoding="utf-8"))
-		except FileNotFoundError:
-			pass
+
+		# prevent None errors
+		if self.outfile is not None:
+			# catch FileNotFoundError on first run or file missing
+			try:
+				local_file = local_file.load(open(self.outfile, "r", encoding="utf-8"))
+			except FileNotFoundError:
+				pass
+
 
 		remote_file = {
 			"acl": {
