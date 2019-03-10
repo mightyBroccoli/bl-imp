@@ -3,7 +3,6 @@
 
 # workflow
 # start options main.py --dry-run --outfile file
-
 import requests
 import os
 import sys
@@ -16,14 +15,22 @@ class BlacklistImporter:
 		self.outfile = args.outfile
 		self.dryrun = args.dryrun
 		self.url = "https://raw.githubusercontent.com/JabberSPAM/blacklist/master/blacklist.txt"
-		self.blacklist = None
+		self.blacklist = ""
 		self.change = False
 
 	def request(self):
+		"""
+		determine if the download is required
+		"""
 		# check if etag header is present if not set local_etag to ""
 		if os.path.isfile(".etag"):
-			with open(".etag", "r") as file:
-				local_etag = file.read()
+			# catch special case were etag file is present and blacklist.txt is not
+			if not os.path.isfile("blacklist.txt"):
+				local_etag = ""
+			else:
+				# if both files are present continue normally
+				with open(".etag", "r") as file:
+					local_etag = file.read()
 		else:
 			local_etag = ""
 
@@ -32,9 +39,9 @@ class BlacklistImporter:
 			head = s.head(self.url)
 			etag = head.headers['etag']
 
-			# if etags match up or if a connection is not possible fall back to local cache
+			# if etags match up or if the connection is not possible fall back to local cache
 			if local_etag == etag or head.status_code != 200:
-				# check if local cache is present
+				# if local cache is present overwrite blacklist var
 				if os.path.isfile("blacklist.txt"):
 					with open("blacklist.txt", "r", encoding="utf-8") as file:
 						self.blacklist = file.read()
@@ -49,8 +56,8 @@ class BlacklistImporter:
 				with open("blacklist.txt", "w") as file:
 					file.write(self.blacklist)
 
-				with open('.etag', 'w') as string:
-					string.write(local_etag)
+				with open('.etag', 'w') as file:
+					file.write(local_etag)
 
 	def main(self):
 		# first check if blacklist is updated
@@ -68,18 +75,20 @@ class BlacklistImporter:
 			os.system("ejabberdctl reload_config")
 
 	def process(self):
+		"""
+		function to build and compare the local yaml file to the remote file
+		if the remote file is different, the local file gets overwritten
+		"""
 		# init new YAML variable
 		local_file = YAML(typ="safe")
 
 		# prevent None errors
 		if self.outfile is not None:
-			# catch FileNotFoundError on first run or file missing
-			try:
+			# prevent FileNotFoundError on first run or file missing
+			if os.path.isfile(self.outfile):
 				local_file = local_file.load(open(self.outfile, "r", encoding="utf-8"))
-			except FileNotFoundError:
-				pass
 
-
+		# blacklist frame
 		remote_file = {
 			"acl": {
 				"spamblacklist": {
@@ -88,6 +97,7 @@ class BlacklistImporter:
 			}
 		}
 
+		# build the blacklist with the given frame to compare to local blacklist
 		for entry in self.blacklist.split():
 			entry = scalarstring.DoubleQuotedScalarString(entry)
 			remote_file["acl"]["spamblacklist"]["server"].append(entry)
