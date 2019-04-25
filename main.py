@@ -14,6 +14,7 @@ class BlacklistImporter:
 	def __init__(self, args):
 		self.outfile = args.outfile
 		self.dryrun = args.dryrun
+		self.path = os.path.dirname(__file__)
 		self.url = "https://raw.githubusercontent.com/JabberSPAM/blacklist/master/blacklist.txt"
 		self.blacklist = ""
 		self.change = False
@@ -22,14 +23,17 @@ class BlacklistImporter:
 		"""
 		determine if the download is required
 		"""
+		etag_path = "".join([self.path, "/.etag"])
+		blacklist_path = "".join([self.path, "/blacklist.txt"])
+
 		# check if etag header is present if not set local_etag to ""
-		if os.path.isfile(".etag"):
+		if os.path.isfile(etag_path):
 			# catch special case were etag file is present and blacklist.txt is not
-			if not os.path.isfile("blacklist.txt"):
+			if not os.path.isfile(blacklist_path):
 				local_etag = ""
 			else:
 				# if both files are present continue normally
-				with open(".etag", "r") as file:
+				with open(etag_path, "r") as file:
 					local_etag = file.read()
 		else:
 			local_etag = ""
@@ -42,8 +46,8 @@ class BlacklistImporter:
 			# if etags match up or if the connection is not possible fall back to local cache
 			if local_etag == etag or head.status_code != 200:
 				# if local cache is present overwrite blacklist var
-				if os.path.isfile("blacklist.txt"):
-					with open("blacklist.txt", "r", encoding="utf-8") as file:
+				if os.path.isfile(blacklist_path):
+					with open(blacklist_path, "r", encoding="utf-8") as file:
 						self.blacklist = file.read()
 
 			# in any other case request a new file
@@ -53,10 +57,10 @@ class BlacklistImporter:
 				local_etag = head.headers['etag']
 				self.blacklist = r.content.decode()
 
-				with open("blacklist.txt", "w") as file:
+				with open(blacklist_path, "w") as file:
 					file.write(self.blacklist)
 
-				with open('.etag', 'w') as file:
+				with open(etag_path, 'w') as file:
 					file.write(local_etag)
 
 	def main(self):
