@@ -7,6 +7,7 @@ import requests
 import os
 import sys
 import argparse
+import subprocess
 from ruamel.yaml import YAML, scalarstring
 
 
@@ -33,8 +34,8 @@ class BlacklistImporter:
 				local_etag = ""
 			else:
 				# if both files are present continue normally
-				with open(etag_path, "r") as file:
-					local_etag = file.read()
+				with open(etag_path, "r") as local_file:
+					local_etag = local_file.read()
 		else:
 			local_etag = ""
 
@@ -47,8 +48,8 @@ class BlacklistImporter:
 			if local_etag == etag or head.status_code != 200:
 				# if local cache is present overwrite blacklist var
 				if os.path.isfile(blacklist_path):
-					with open(blacklist_path, "r", encoding="utf-8") as file:
-						self.blacklist = file.read()
+					with open(blacklist_path, "r", encoding="utf-8") as local_file:
+						self.blacklist = local_file.read()
 
 			# in any other case request a new file
 			else:
@@ -57,11 +58,11 @@ class BlacklistImporter:
 				local_etag = head.headers['etag']
 				self.blacklist = r.content.decode()
 
-				with open(blacklist_path, "w") as file:
-					file.write(self.blacklist)
+				with open(blacklist_path, "w") as local_file:
+					local_file.write(self.blacklist)
 
-				with open(etag_path, 'w') as file:
-					file.write(local_etag)
+				with open(etag_path, 'w') as local_file:
+					local_file.write(local_etag)
 
 	def main(self):
 		# first check if blacklist is updated
@@ -76,7 +77,7 @@ class BlacklistImporter:
 
 		# reload config if changes have been applied
 		if self.change:
-			os.system("ejabberdctl reload_config")
+			subprocess.call('/usr/sbin/ejabberdctl reload_config', shell=False)
 
 	def process(self):
 		"""
