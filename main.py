@@ -76,7 +76,15 @@ class BlacklistImporter:
 
 		# reload config if changes have been applied
 		if self.change:
-			subprocess.call(['/usr/sbin/ejabberdctl', 'reload_config'], shell=False)
+			# catch ejabberdctl missing
+			if os.path.isfile('/usr/sbin/ejabberdctl'):
+				subprocess.call(['/usr/sbin/ejabberdctl', 'reload_config'], shell=False)
+
+			# report missing ejabberdctl reload_config
+			else:
+				print('/usr/sbin/ejabberdctl was not found', file=sys.stderr)
+				print('blacklist changes have been applied\nejabberd config was not reloaded', file=sys.stderr)
+				sys.exit(1)
 
 	def process(self):
 		"""
