@@ -67,11 +67,11 @@ class BlacklistImporter:
 		# first check if blacklist is updated
 		self.request()
 
+		# only output the selected outfile
 		if self.dryrun:
-			# only output the selected software and outfile
 			print("outfile selected: %s" % self.outfile)
 
-		# select ejabberd processing
+		# blacklist processing
 		self.process()
 
 		# reload config if changes have been applied
@@ -86,7 +86,7 @@ class BlacklistImporter:
 		# init new YAML variable
 		local_file = YAML(typ="safe")
 
-		# prevent None errors
+		# None catch
 		if self.outfile is not None:
 			# prevent FileNotFoundError on first run or file missing
 			if os.path.isfile(self.outfile):
@@ -110,14 +110,28 @@ class BlacklistImporter:
 		yml.indent(offset=2)
 		yml.default_flow_style = False
 
+		# if dry-run true print expected content
 		if self.dryrun:
-			# if dryrun true print expected content
 			yml.dump(remote_file, sys.stdout)
 
+		# only if the local_file and remote_file are unequal write new file
 		elif local_file != remote_file:
-			self.change = True
-			# only if the local_file and remote_file are unequal write new file
-			yml.dump(remote_file, open(self.outfile, "w"))
+
+			# prevent FileNotFoundError if self.outfile is not assigned
+			if self.outfile is None:
+				print("no outfile assigned", file=sys.stderr)
+				print(parser.format_help(), file=sys.stderr)
+				sys.exit(2)
+
+			# proceed to update the defined outfile
+			elif self.outfile is not None:
+				self.change = True
+				yml.dump(remote_file, open(self.outfile, "w"))
+
+			# if that's impossible break and display help message
+			else:
+				print(parser.format_help(), file=sys.stderr)
+				sys.exit(1)
 
 
 if __name__ == "__main__":
