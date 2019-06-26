@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# workflow
-# start options main.py --dry-run --outfile file
-import requests
-import os
-import sys
 import argparse
+import os
 import subprocess
+import sys
+
+import requests
 from ruamel.yaml import YAML, scalarstring
 
 
@@ -24,8 +23,8 @@ class BlacklistImporter:
 		"""
 		determine if the download is required
 		"""
-		etag_path = "".join([self.path, "/.etag"])
-		blacklist_path = "".join([self.path, "/blacklist.txt"])
+		etag_path = "/".join([self.path, ".etag"])
+		blacklist_path = "/".join([self.path, "blacklist.txt"])
 
 		# check if etag header is present if not set local_etag to ""
 		if os.path.isfile(etag_path):
@@ -77,7 +76,7 @@ class BlacklistImporter:
 
 		# reload config if changes have been applied
 		if self.change:
-			subprocess.call('/usr/sbin/ejabberdctl reload_config', shell=False)
+			subprocess.call(['/usr/sbin/ejabberdctl', 'reload_config'], shell=False)
 
 	def process(self):
 		"""
