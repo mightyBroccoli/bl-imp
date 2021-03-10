@@ -3,7 +3,17 @@
 ### installation
 Python 3 virtual environment
 ```bash
-virtualenv -p python3
+# Debian
+apt install python-virtualenv
+
+# Arch
+pacman -S python-virtualenv
+
+# create a venv folder inside the cloned repository
+mkdir venv
+virtualenv -p python3 venv/
+
+source ./venv/bin/activate
 pip install -r requirements.txt
 ```
 
@@ -19,8 +29,8 @@ optional arguments:
 ```
 
 #### without any arguments
-Running `main.py` without any arguments, will cause the script to update the local cache and the corresponding `.etag` 
-file. After that the script will output the error and the help message to stderr, before exiting with error code `2` 
+Running `main.py` without any arguments, will cause the tool to update the local cache and the corresponding `.etag` 
+file. After that the script will output the following error followed by the help message to stderr, before exiting with error code `2` 
 
 ```bash
 no outfile assigned
@@ -28,8 +38,8 @@ no outfile assigned
 ```
 
 #### dry run
-If `main.py` is executed with `-dr` or `--dry-run` as argument the output would look like this. The script will check
- the blacklist repository and output everything to stdout without touching any system file.
+If `main.py` is executed with `-dr` or `--dry-run` as argument the output would look like this. The script will check 
+the blacklist repository and output everything to stdout without touching any system file besides the local `.etag` file.
 ```bash
 $ /path/blacklist_import: python main.py --dr
 outfile selected: None
@@ -44,13 +54,12 @@ acl:
 Run without the `--dry-run` argument and a valid outfile, the script will return nothing and do its thing.
 
 ##### *ejabberd reload_config*
-The ejabberd instance will be reloaded automatically, but only if changes in the `outfile` occured.
+The ejabberd instance will be reloaded automatically, but only if changes in the `outfile` occurred.
 
 ## configuration
 ### ejabberd
 To use this script properly, you need to add this line to the `ACL` section of your ejabberd instance. Furthermore a 
-separate `yml` file is necessary, as the script will overwrite the file. To further protect the integrity of your 
-config the `allow_only` sections defines only `acl` rules.
+separate `yml` file is necessary. To further protect the integrity of your config the `allow_only` sections defines only `acl` rules.
 ```yaml
   "/etc/ejabberd/blacklist.yml":
     allow_only:
