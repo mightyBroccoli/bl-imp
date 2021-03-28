@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import argparse
-
 import requests
-from appdirs import *
+from appdirs import user_cache_dir
 
 from .bl_process import ProcessBlocklist
 from .misc import *
 
 
-class BlacklistImporter:
+class Blimp:
     def __init__(self, args):
         self.outfile = args.outfile
         self.dryrun = args.dry_run
@@ -89,9 +87,10 @@ class BlacklistImporter:
         self.start_request()
 
         # blacklist processing
-        ProcessBlocklist().process(self.blacklist, self.outfile, self.dryrun)
+        ProcessBlocklist.process(self.blacklist, self.outfile, self.dryrun)
 
-        """# reload config if changes have been applied
+        """
+        # reload config if changes have been applied
         if self.change:
             # catch ejabberdctl missing
             if Path("/usr/sbin/ejabberdctl").is_file():
@@ -102,14 +101,9 @@ class BlacklistImporter:
                 print("/usr/sbin/ejabberdctl was not found", file=sys.stderr)
                 print("blacklist changes have been applied\nejabberd config was not reloaded", file=sys.stderr)
                 sys.exit(1)
-"""
+        """
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-out", "--outfile", help="set path to output file", action="store", default=None)
-    parser.add_argument("-dr", "--dry-run", help="perform a dry run", action="store_true", default=False)
-    args = parser.parse_args()
-
-    # run
-    BlacklistImporter(args).main()
+    from .cli import  cli
+    cli()

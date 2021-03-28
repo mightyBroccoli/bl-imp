@@ -3,7 +3,7 @@
 
 import argparse
 
-from .main import BlacklistImporter
+from .main import Blimp
 
 
 def cli():
@@ -13,4 +13,4 @@ def cli():
     args = parser.parse_args()
 
     # run
-    BlacklistImporter(args).main()
+    Blimp(args).main()

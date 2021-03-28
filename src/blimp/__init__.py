@@ -4,11 +4,11 @@
 # version
 __version__ = "0.1"
 
-# main
-from .main import BlacklistImporter
-
 # modules
 from .bl_process import ProcessBlocklist
+
+# main
+from .main import Blimp
 
 # utils
 from .misc import *

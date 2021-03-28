@@ -6,7 +6,12 @@ from ruamel.yaml import YAML, scalarstring
 
 from .misc import *
 
+
 class ProcessBlocklist:
+    def __init__(self):
+        pass
+
+    @classmethod
     def process(self, blacklist, outfile, dryrun: bool):
         """
         function to build and compare the local yaml file to the remote file
@@ -18,8 +23,6 @@ class ProcessBlocklist:
             if local_file_present(outfile):
                 with open(outfile, "r", encoding="utf-8") as local_file:
                     local_blacklist = local_file.read()
-
-            print("step local file")
 
         except TypeError:
             # no local copy use empty one instead
