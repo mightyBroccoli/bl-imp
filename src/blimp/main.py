@@ -39,13 +39,12 @@ class Blimp:
         if not local_file_present(self.etag_path):
             return True
 
-        # etag file is present but outdated
-        else:
-            with open(self.etag_path, "r") as local_file:
-                local_etag = local_file.read()
+        with open(self.etag_path, "r") as local_file:
+            local_etag = local_file.read()
 
-            if local_etag != etag:
-                return True
+        # etag file is present but outdated
+        if local_etag != etag:
+            return True
 
         return False
 
