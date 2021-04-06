@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from pathlib import Path
+
 import requests
 from appdirs import user_cache_dir
 
 from .bl_process import ProcessBlocklist
-from .misc import *
+from .misc import local_file_present
 
 
 class Blimp:
@@ -89,21 +91,7 @@ class Blimp:
         # blacklist processing
         ProcessBlocklist.process(self.blacklist, self.outfile, self.dryrun)
 
-        """
-        # reload config if changes have been applied
-        if self.change:
-            # catch ejabberdctl missing
-            if Path("/usr/sbin/ejabberdctl").is_file():
-                subprocess.call(["/usr/sbin/ejabberdctl", "reload_config"], shell=False)
-
-            # report missing ejabberdctl reload_config
-            else:
-                print("/usr/sbin/ejabberdctl was not found", file=sys.stderr)
-                print("blacklist changes have been applied\nejabberd config was not reloaded", file=sys.stderr)
-                sys.exit(1)
-        """
-
 
 if __name__ == "__main__":
-    from .cli import  cli
+    from .cli import cli
     cli()
