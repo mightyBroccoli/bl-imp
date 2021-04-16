@@ -23,8 +23,8 @@ optional arguments:
 ```
 
 #### without any arguments
-Running `bl-imp` without any arguments, cause the tool to update the local cache and the corresponding etag file. After
-that the tool will exit with the exit code `2` followed by the help message to stderr.
+Running `bl-imp` without any arguments, cause the tool to update the local cache and etag file. After that the tool will
+exit with the exit code `2` followed by the help message to stderr.
 
 ```bash
 no outfile assigned
@@ -51,16 +51,16 @@ Adding the `outfile` argument while omitting the dry run argument runs the tools
 To fully utilize the tool some configuration changes are required.
 Firstly it is necessary that `bl-imp` is the only one editing the defined yml file, because any local change not
 present in the remote list will be overwritten automatically. Furthermore it is necessary for the file to be separate
-from the "main" ejabberd configuration e.g `ejabberd.yml`. To further protect the integrity of your config the
+from the "main" ejabberd configuration e.g `ejabberd.yml`. Lastly to protect the integrity of your config files the
 `allow_only` argument restricts the external file to only allow for `acl` rules.
 
 #### ejabberd acl config
 ```yaml
 ## acl
 include_config_file:
-  "/etc/ejabberd/blacklist.yml":   ⟵ the path is completely user configurable
-    allow_only:                    ⟵ these two lines are optional but recommended
-      - acl                         └─ to prevent potentially malicious acls to not incluse anthing but ACL rules
+  "/etc/ejabberd/blacklist.yml":   # ⟵ the path is completely user configurable
+    allow_only:                    # ⟵ the allow_only section is optional but recommended
+      - acl
 
 ## access rules
 access_rules:
