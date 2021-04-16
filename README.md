@@ -56,10 +56,17 @@ To further protect the integrity of your config the `allow_only` sections define
 
 #### ejabberd acl config
 ```yaml
+## ACL section
 include_config_file:
   "/etc/ejabberd/blacklist.yml":   <-- the path is completely user configurable
     allow_only:                    <-- these two lines are optional but recommended
       - acl                         └─ to prevent potentially malicious acls to not incluse anthing but ACL rules
+
+## Access Rules
+access_rules:
+  s2s_access:
+    - deny: spamblacklist
+    - allow
 ```
 
 ### automation
