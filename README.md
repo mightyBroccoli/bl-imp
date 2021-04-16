@@ -1,25 +1,19 @@
-## Blacklist import script
+## bl-imp - the JabberSpam bl(acklist) imp(orter)
 
-### installation
-Python 3 virtual environment
+### precursor
+Please be warned that at this point the JabberSpam blacklist is the only list that will be used. It is planed to open up
+the tool to also import other lists in the future.
+
+### install
+The tool can be installed easily via that Python package Index (pip). After that the local wrapper `/usr/bin/bl-imp`
+can be called to use the module.
 ```bash
-# Debian
-apt install python-virtualenv
-
-# Arch
-pacman -S python-virtualenv
-
-# create a venv folder inside the cloned repository
-mkdir venv
-virtualenv -p python3 venv/
-
-source ./venv/bin/activate
-pip install -r requirements.txt
+pip install bl-imp
 ```
 
-### usage main.py
+### `bl-imp` usage
 ```
-usage: main.py [-h] [-o OUTFILE] [-dr]
+usage: bl-imp [-h] [-o OUTFILE] [-dr]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -29,19 +23,19 @@ optional arguments:
 ```
 
 #### without any arguments
-Running `main.py` without any arguments, will cause the tool to update the local cache and the corresponding `.etag` 
-file. After that the script will output the following error followed by the help message to stderr, before exiting with error code `2` 
+Running `bl-imp` without any arguments, cause the tool to update the local cache and etag file. After that the tool will
+exit with the exit code `2` followed by the help message to stderr.
 
 ```bash
 no outfile assigned
-...
 ```
 
 #### dry run
-If `main.py` is executed with `-dr` or `--dry-run` as argument the output would look like this. The script will check 
-the blacklist repository and output everything to stdout without touching any system file besides the local `.etag` file.
-```bash
-$ /path/blacklist_import: python main.py --dr
+Running `bl-imp` with `-dr` or `--dry-run` as argument will cause the tool to only output the aggregated yaml file to
+stdout. Except the local etag and cache file no file is written to disk.
+
+```bashinstaller
+$ /usr/bin/bl-imp --dry-run
 outfile selected: None
 acl:
   spamblacklist:
@@ -50,34 +44,40 @@ acl:
       - "b-server.tld"
 ```
 
-#### --outfile /path/
-Run without the `--dry-run` argument and a valid outfile, the script will return nothing and do its thing.
+#### --outfile /path/out.yml
+Adding the `outfile` argument while omitting the dry run argument runs the tools silently while doing its thing.
 
-##### *ejabberd reload_config*
-The ejabberd instance will be reloaded automatically, but only if changes in the `outfile` occurred.
+### ejabberd configuration
+To fully utilize the tool some configuration changes are required.
+Firstly it is necessary that `bl-imp` is the only one editing the defined yml file, because any local change not
+present in the remote list will be overwritten automatically. Furthermore it is necessary for the file to be separate
+from the "main" ejabberd configuration e.g `ejabberd.yml`. Lastly to protect the integrity of your config files the
+`allow_only` argument restricts the external file to only allow for `acl` rules.
 
-## configuration
-### ejabberd
-To use this script properly, you need to add this line to the `ACL` section of your ejabberd instance. Furthermore a 
-separate `yml` file is necessary. To further protect the integrity of your config the `allow_only` sections defines only `acl` rules.
+#### ejabberd acl config
 ```yaml
-  "/etc/ejabberd/blacklist.yml":
-    allow_only:
+## acl
+include_config_file:
+  "/etc/ejabberd/blacklist.yml":   # ⟵ the path is completely user configurable
+    allow_only:                    # ⟵ the allow_only section is optional but recommended
       - acl
+
+## access rules
+access_rules:
+  s2s_access:
+    - deny: spamblacklist
+    - allow
 ```
 
-### script itself 
-The script is meant to be used in an automatic fashion.
+### automation
+The tool is meant to be used in an automatic fashion. It is build to operate silently without any user interaction.
 
-For example the script could be executed every day at 00:01 to automatically add and remove affected servers from the
- blacklist file.
+For example the script could be run every day at 00:01 to automatically add/ remove affected servers from the local
+blacklist and reload the configuration if the first task finished successfully.
 
 ```cron
 # jabber blacklist update
 
-# with virtualenv enabled
-1 0 * * * /path/blacklist_import/venv/bin/python /path/blacklist_import/main.py -o  /etc/ejabberd/config/blacklist.yml
-
-# without virtualenv
-1 0 * * * python3 /path/blacklist_import/main.py -o  /etc/ejabberd/config/blacklist.yml
+# the outfile here is configured with the shortflag -o instead of the long form
+1 0 * * * /usr/bin/bl-imp -o  /etc/ejabberd/config/blacklist.yml && /usr/bin/ejabberdctl reload_config
 ```
