@@ -2,7 +2,7 @@
 from setuptools import setup
 
 setup(
-    name="Blimp",
+    name="bl-imp",
     install_requires=[
         "appdirs>=1.4",
         "requests>=2.25",

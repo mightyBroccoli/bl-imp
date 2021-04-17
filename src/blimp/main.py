@@ -17,7 +17,6 @@ class Blimp:
         self.path = Path(user_cache_dir("blimp"))
         self.url = "https://raw.githubusercontent.com/JabberSPAM/blacklist/master/blacklist.txt"
         self.blacklist = ""
-        self.apply_changes = False
 
         self.etag_path = self.path.joinpath(".etag")
         self.blacklist_path = self.path.joinpath("blacklist.txt")
