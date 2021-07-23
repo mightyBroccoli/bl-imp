@@ -3,7 +3,7 @@ import sys
 
 from ruamel.yaml import YAML, scalarstring
 
-from .misc import local_file_present
+from blimp.misc import local_file_present
 
 
 class ProcessBlocklist:

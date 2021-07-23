@@ -6,8 +6,8 @@ from pathlib import Path
 import requests
 from appdirs import user_cache_dir
 
-from .bl_process import ProcessBlocklist
-from .misc import local_file_present
+from blimp.bl_process import ProcessBlocklist
+from blimp.misc import local_file_present
 
 
 class Blimp:
@@ -91,5 +91,5 @@ class Blimp:
 
 
 if __name__ == "__main__":
-    from .cli import cli
+    from blimp.cli import cli
     cli()

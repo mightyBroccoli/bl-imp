@@ -3,7 +3,7 @@
 
 import argparse
 
-from .main import Blimp
+from blimp.main import Blimp
 
 
 def cli():
