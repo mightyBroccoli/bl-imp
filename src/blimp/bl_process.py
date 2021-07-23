@@ -10,20 +10,19 @@ class ProcessBlocklist:
     def __init__(self):
         pass
 
+
     @classmethod
     def process(self, blacklist, outfile, dryrun: bool):
         """
         function to build and compare the local yaml file to the remote file
         if the remote file is different, the local file gets overwritten
         """
-        # cheeky none catch
         try:
             # load local blacklist outfile
-            if local_file_present(outfile):
-                with open(outfile, "r", encoding="utf-8") as local_file:
-                    local_blacklist = local_file.read()
+            with open(outfile, "r", encoding="utf-8") as local_file:
+                local_blacklist = local_file.read()
 
-        except TypeError:
+        except (TypeError, FileNotFoundError):
             # no local copy use empty one instead
             local_blacklist = YAML(typ="safe")
 
