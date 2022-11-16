@@ -91,4 +91,5 @@ class Blimp:
 
 if __name__ == "__main__":
     from blimp.cli import cli
+
     cli()

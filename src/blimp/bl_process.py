@@ -9,7 +9,6 @@ class ProcessBlocklist:
     def __init__(self):
         pass
 
-
     @classmethod
     def process(self, blacklist, outfile, dryrun: bool):
         """

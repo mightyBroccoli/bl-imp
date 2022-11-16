@@ -8,6 +8,6 @@ setup(
         "requests>=2.25",
         "ruamel.yaml>=0.17",
         "ruamel.yaml.clib>=0.2",
-        "urllib3>=1.26"
-    ]
+        "urllib3>=1.26",
+    ],
 )
