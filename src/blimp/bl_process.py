@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import sys
 
 from ruamel.yaml import YAML, scalarstring
@@ -19,7 +18,7 @@ class ProcessBlocklist:
         """
         try:
             # load local blacklist outfile
-            with open(outfile, "r", encoding="utf-8") as local_file:
+            with open(outfile, encoding="utf-8") as local_file:
                 local_blacklist = local_file.read()
 
         except (TypeError, FileNotFoundError):

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 from pathlib import Path
 
@@ -38,7 +37,7 @@ class Blimp:
         if not local_file_present(self.etag_path):
             return True
 
-        with open(self.etag_path, "r") as local_file:
+        with open(self.etag_path) as local_file:
             local_etag = local_file.read()
 
         # etag file is present but outdated
@@ -60,7 +59,7 @@ class Blimp:
                 return
 
             if not self.download_required(etag):
-                with open(self.blacklist_path, "r", encoding="utf-8") as local_file:
+                with open(self.blacklist_path, encoding="utf-8") as local_file:
                     self.blacklist = local_file.read()
 
             else:
