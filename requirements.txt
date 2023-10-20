@@ -1,4 +1,4 @@
 appdirs==1.4.4
 requests==2.31.0
-ruamel.yaml==0.17.36
+ruamel.yaml==0.17.39
 ruamel.yaml.clib==0.2.8
